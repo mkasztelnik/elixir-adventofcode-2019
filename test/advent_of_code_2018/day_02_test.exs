@@ -1,15 +1,8 @@
 defmodule AdventOfCode.Day02Test do
   use ExUnit.Case
+  doctest AdventOfCode.Day02
 
   import AdventOfCode.Day02
-
-  @tag :skip
-  test "part1" do
-    input = nil
-    result = part1(input)
-
-    assert result
-  end
 
   @tag :skip
   test "part2" do
