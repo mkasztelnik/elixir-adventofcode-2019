@@ -7,7 +7,7 @@ defmodule Mix.Tasks.D01.P1 do
   def run(args) do
     input =
       AdventOfCode.input!("inputs/d01.txt")
-      |> Enum.map(&AdventOfCode.parse/1)
+      |> Enum.map(&String.to_integer/1)
 
     if Enum.member?(args, "-b"),
       do: Benchee.run(%{part_1: fn -> input |> part1() end}),
