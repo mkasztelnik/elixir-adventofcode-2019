@@ -3,10 +3,6 @@ defmodule AdventOfCode.Day03 do
     defstruct x: nil, y: nil
   end
 
-  defmodule Segment do
-    defstruct from: nil, to: nil, start: nil
-  end
-
   @doc """
     Day 3 part 1
 
