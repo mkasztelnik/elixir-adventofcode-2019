@@ -29,6 +29,7 @@ defmodule AdventOfCode.Day02 do
   end
 
   defp do_calculate([99 | _], _, code), do: code
+
   defp do_calculate([operation, first_index, second_index, target_index | _], index, code) do
     value = execute_operation(operation, Enum.at(code, first_index), Enum.at(code, second_index))
 
@@ -40,7 +41,7 @@ defmodule AdventOfCode.Day02 do
 
   def part2(code) do
     scope = for x <- 0..99, y <- 0..99, do: [x, y]
-    [noun, verb] = Enum.find(scope, fn [n, v] -> calculate(code, n, v) == 19690720 end)
+    [noun, verb] = Enum.find(scope, fn [n, v] -> calculate(code, n, v) == 19_690_720 end)
 
     100 * noun + verb
   end

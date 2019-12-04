@@ -43,7 +43,7 @@ defmodule AdventOfCode.Day03 do
     MapSet.intersection(MapSet.new(wire1), MapSet.new(wire2))
   end
 
-  defp move("R"<>quantity, acc) do
+  defp move("R" <> quantity, acc) do
     1..String.to_integer(quantity)
     |> Enum.reduce(acc, fn _, {point, points} ->
       new_point = %Point{x: point.x + 1, y: point.y}
@@ -51,7 +51,7 @@ defmodule AdventOfCode.Day03 do
     end)
   end
 
-  defp move("L"<>quantity, acc) do
+  defp move("L" <> quantity, acc) do
     1..String.to_integer(quantity)
     |> Enum.reduce(acc, fn _, {point, points} ->
       new_point = %Point{x: point.x - 1, y: point.y}
@@ -59,7 +59,7 @@ defmodule AdventOfCode.Day03 do
     end)
   end
 
-  defp move("D"<>quantity, acc) do
+  defp move("D" <> quantity, acc) do
     1..String.to_integer(quantity)
     |> Enum.reduce(acc, fn _, {point, points} ->
       new_point = %Point{x: point.x, y: point.y - 1}
@@ -67,7 +67,7 @@ defmodule AdventOfCode.Day03 do
     end)
   end
 
-  defp move("U"<>quantity, acc) do
+  defp move("U" <> quantity, acc) do
     1..String.to_integer(quantity)
     |> Enum.reduce(acc, fn _, {point, points} ->
       new_point = %Point{x: point.x, y: point.y + 1}
@@ -113,4 +113,3 @@ defmodule AdventOfCode.Day03 do
     costs
   end
 end
-

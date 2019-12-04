@@ -33,6 +33,7 @@ defmodule AdventOfCode.Day01 do
 
   defp total_fuel(mass, total \\ 0)
   defp total_fuel(mass, total) when mass <= 0, do: total - mass
+
   defp total_fuel(mass, total) do
     fuel = fuel(mass)
     total_fuel(fuel, total + fuel)
