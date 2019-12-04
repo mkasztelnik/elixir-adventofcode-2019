@@ -4,7 +4,7 @@ defmodule AdventOfCode.Day03 do
   end
 
   defmodule Segment do
-    defstruct from: nil, to: nil
+    defstruct from: nil, to: nil, start: nil
   end
 
   @doc """
@@ -23,69 +23,94 @@ defmodule AdventOfCode.Day03 do
       iex>  ["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7"]])
       135
   """
-  def part1([wire1, wire2]) do
-    for s1 <- segments(wire1), s2 <- segments(wire2) do
-      crossing_point(s1, s2)
-    end
-    |> Enum.reject(fn x -> x == nil end)
+  def part1([wire1_commands, wire2_commands]) do
+    crossing_points(wire(wire1_commands), wire(wire2_commands))
     |> Enum.map(fn %Point{x: x, y: y} -> abs(x) + abs(y) end)
     |> Enum.min()
   end
 
-
-  defp crossing_point(
-    %Segment{from: %Point{x: x1, y: y}, to: %Point{x: x2, y: y}},
-    %Segment{from: %Point{x: x, y: y1}, to: %Point{x: x, y: y2}}
-  ) when x1 < x and x < x2 and y1 < y and y < y2 do
-    %Point{x: x, y: y}
-  end
-
-  defp crossing_point(
-    %Segment{from: %Point{x: x, y: y1}, to: %Point{x: x, y: y2}},
-    %Segment{from: %Point{x: x1, y: y}, to: %Point{x: x2, y: y}}
-  ) when x1 < x and x < x2 and y1 < y and y < y2 do
-    %Point{x: x, y: y}
-  end
-
-  defp crossing_point(_, _), do: nil
-
-  defp segments(wire) do
-    {_, segments} =
-      wire
-      |> Enum.reduce({%Point{x: 0, y: 0}, []}, fn command, {possition, segments} ->
-        {new_point, new_segment} = move(possition, command)
-
-        {new_point, [new_segment | segments]}
+  defp wire(commands) do
+    {_, points} =
+      commands
+      |> Enum.reduce({%Point{x: 0, y: 0}, []}, fn command, acc ->
+        move(command, acc)
       end)
 
-    segments
+    Enum.reverse(points)
   end
 
-  defp move(point, "R"<>quantity) do
-    target = %Point{x: point.x + String.to_integer(quantity), y: point.y}
-
-    {target, %Segment{from: point, to: target}}
+  defp crossing_points(wire1, wire2) do
+    MapSet.intersection(MapSet.new(wire1), MapSet.new(wire2))
   end
 
-  defp move(point, "L"<>quantity) do
-    target = %Point{x: point.x - String.to_integer(quantity), y: point.y}
-
-    {target, %Segment{from: target, to: point}}
+  defp move("R"<>quantity, acc) do
+    1..String.to_integer(quantity)
+    |> Enum.reduce(acc, fn _, {point, points} ->
+      new_point = %Point{x: point.x + 1, y: point.y}
+      {new_point, [new_point | points]}
+    end)
   end
 
-  defp move(point, "D"<>quantity) do
-    target = %Point{x: point.x, y: point.y - String.to_integer(quantity)}
-
-    {target, %Segment{from: target, to: point}}
+  defp move("L"<>quantity, acc) do
+    1..String.to_integer(quantity)
+    |> Enum.reduce(acc, fn _, {point, points} ->
+      new_point = %Point{x: point.x - 1, y: point.y}
+      {new_point, [new_point | points]}
+    end)
   end
 
-  defp move(point, "U"<>quantity) do
-    target = %Point{x: point.x, y: point.y + String.to_integer(quantity)}
-
-    {target, %Segment{from: point, to: target}}
+  defp move("D"<>quantity, acc) do
+    1..String.to_integer(quantity)
+    |> Enum.reduce(acc, fn _, {point, points} ->
+      new_point = %Point{x: point.x, y: point.y - 1}
+      {new_point, [new_point | points]}
+    end)
   end
 
-  def part2(args) do
+  defp move("U"<>quantity, acc) do
+    1..String.to_integer(quantity)
+    |> Enum.reduce(acc, fn _, {point, points} ->
+      new_point = %Point{x: point.x, y: point.y + 1}
+      {new_point, [new_point | points]}
+    end)
+  end
+
+  @doc """
+    Day 3 part 1
+
+    ## Examples:
+      iex> AdventOfCode.Day03.part2([
+      iex>  ["R8","U5","L5","D3"], ["U7","R6","D4","L4"]])
+      30
+      iex> AdventOfCode.Day03.part2([
+      iex>  ["R75","D30","R83","U83","L12","D49","R71","U7","L72"],
+      iex>  ["U62","R66","U55","R34","D71","R55","D58","R83"]])
+      610
+      iex> AdventOfCode.Day03.part2([
+      iex>  ["R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51"],
+      iex>  ["U98","R91","D20","R16","D67","R40","U7","R15","U6","R7"]])
+      410
+  """
+  def part2([wire1_commands, wire2_commands]) do
+    wire1 = wire(wire1_commands)
+    wire2 = wire(wire2_commands)
+
+    wire1_costs = calculate_costs(wire1)
+    wire2_costs = calculate_costs(wire2)
+
+    crossing_points(wire1, wire2)
+    |> Enum.map(fn point -> wire1_costs[point] + wire2_costs[point] end)
+    |> Enum.min()
+  end
+
+  defp calculate_costs(wire_points) do
+    {_, costs} =
+      wire_points
+      |> Enum.reduce({0, %{}}, fn point, {current_cost, costs} ->
+        {current_cost + 1, Map.put_new(costs, point, current_cost + 1)}
+      end)
+
+    costs
   end
 end
 
