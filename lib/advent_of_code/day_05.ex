@@ -3,6 +3,7 @@ defmodule AdventOfCode.Day05 do
     AdventOfCode.Intcode.run(code)
   end
 
-  def part2(_args) do
+  def part2(code) do
+    AdventOfCode.Intcode.run(code)
   end
 end

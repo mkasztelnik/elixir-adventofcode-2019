@@ -33,6 +33,20 @@ defmodule AdventOfCode.Intcode do
     run(code, index + 2)
   end
 
+  defp do_run({5, modes}, [source_index, new_index_index | _], index, code) do
+    case value(code, source_index, mode(modes, 10)) != 0 do
+      true -> run(code, value(code, new_index_index, mode(modes, 100)))
+      false -> run(code, index + 3)
+    end
+  end
+
+  defp do_run({6, modes}, [source_index, new_index_index | _], index, code) do
+    case value(code, source_index, mode(modes, 10)) == 0 do
+      true -> run(code, value(code, new_index_index, mode(modes, 100)))
+      false -> run(code, index + 3)
+    end
+  end
+
   defp do_run({operation, modes}, [first_index, second_index, target_index | _], index, code) do
     first_value = value(code, first_index, mode(modes, 10))
     second_value = value(code, second_index, mode(modes, 100))
@@ -50,4 +64,6 @@ defmodule AdventOfCode.Intcode do
 
   defp execute_operation(1, first, second), do: first + second
   defp execute_operation(2, first, second), do: first * second
+  defp execute_operation(7, first, second), do: first < second && 1 || 0
+  defp execute_operation(8, first, second), do: first == second && 1 || 0
 end
