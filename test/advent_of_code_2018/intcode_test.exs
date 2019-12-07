@@ -21,4 +21,8 @@ defmodule AdventOfCode.Day03Test do
   test "4 get command with immediate mode" do
     assert capture_io(fn -> run([104, 2, 99]) end) == "2\n"
   end
+
+  test "run with input" do
+    assert run_with_input([3, 1, 4, 1, 99], [5]) == 5
+  end
 end

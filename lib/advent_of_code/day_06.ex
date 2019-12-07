@@ -1,5 +1,4 @@
 defmodule AdventOfCode.Day06 do
-
   @doc """
     Day 06 part 1
 
@@ -39,7 +38,6 @@ defmodule AdventOfCode.Day06 do
     object_orbits_count(map, tail ++ Map.get(map, object, []), sum + 1)
   end
 
-
   @doc """
     Day 06 part 1
 
@@ -73,7 +71,7 @@ defmodule AdventOfCode.Day06 do
 
   defp jumps_for(reversed_map, object, path \\ []) do
     case Map.get(reversed_map, object) do
-      nil  -> path
+      nil -> path
       jump -> jumps_for(reversed_map, jump, [jump | path])
     end
   end
