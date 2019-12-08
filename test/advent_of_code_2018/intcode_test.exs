@@ -1,28 +1,22 @@
-defmodule AdventOfCode.Day03Test do
+defmodule AdventOfCode.IntcodeTest do
   use ExUnit.Case
   doctest AdventOfCode.Intcode
 
   import AdventOfCode.Intcode
-  import ExUnit.CaptureIO
 
   test "3 get command" do
-    capture_io([input: "5", capture_prompt: false], fn ->
-      result = run([3, 1, 99])
-      send(self(), result)
-    end)
-
-    assert_received [3, 5, 99]
+    send(self(), {:input, 5})
+    assert run([3, 1, 99], self()) == [3, 5, 99]
   end
 
-  test "4 get command with position mode" do
-    assert capture_io(fn -> run([4, 2, 99]) end) == "99\n"
+  test "4 put command with position mode" do
+    run([4, 2, 99], self())
+
+    assert_received {:output, 99}
   end
 
-  test "4 get command with immediate mode" do
-    assert capture_io(fn -> run([104, 2, 99]) end) == "2\n"
-  end
-
-  test "run with input" do
-    assert run_with_input([3, 1, 4, 1, 99], [5]) == 5
+  test "4 put command with immediate mode" do
+    run([104, 2, 99], self())
+    assert_received {:output, 2}
   end
 end

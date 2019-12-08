@@ -7,7 +7,7 @@ defmodule AdventOfCode.Day02 do
     code
     |> List.replace_at(1, noun)
     |> List.replace_at(2, verb)
-    |> AdventOfCode.Intcode.run()
+    |> AdventOfCode.Intcode.run(self())
     |> hd()
   end
 
