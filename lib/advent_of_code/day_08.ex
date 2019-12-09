@@ -4,7 +4,7 @@ defmodule AdventOfCode.Day08 do
       transmission
       |> String.graphemes()
       |> Enum.chunk_every(width * heigth)
-      |> Enum.map(fn layer -> { count(layer, "0"), layer } end)
+      |> Enum.map(fn layer -> {count(layer, "0"), layer} end)
       |> Enum.min_by(fn {count, _} -> count end)
 
     count(layer, "1") * count(layer, "2")

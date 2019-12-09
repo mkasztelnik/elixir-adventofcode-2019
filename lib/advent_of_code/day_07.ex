@@ -57,7 +57,7 @@ defmodule AdventOfCode.Day07 do
 
   def pmap(collection, func) do
     collection
-    |> Enum.map(&(Task.async(fn -> func.(&1) end)))
+    |> Enum.map(&Task.async(fn -> func.(&1) end))
     |> Enum.map(&Task.await/1)
   end
 
@@ -88,14 +88,14 @@ defmodule AdventOfCode.Day07 do
   end
 
   defp run_with_output_to(code, last_result_receiver \\ nil) do
-    spawn fn ->
+    spawn(fn ->
       my_pid = self()
-      worker = spawn fn -> AdventOfCode.Intcode.run(code, my_pid) end
+      worker = spawn(fn -> AdventOfCode.Intcode.run(code, my_pid) end)
 
       receive do
         {:receiver, pid} -> forward_to(worker, pid, last_result_receiver)
       end
-    end
+    end)
   end
 
   defp forward_to(worker, pid, last_input_receiver, result \\ nil) do
@@ -103,9 +103,11 @@ defmodule AdventOfCode.Day07 do
       {:input, input} ->
         send(worker, {:input, input})
         forward_to(worker, pid, last_input_receiver, result)
+
       {:output, output} ->
         send(pid, {:input, output})
         forward_to(worker, pid, last_input_receiver, output)
+
       :eot ->
         last_input_receiver && send(last_input_receiver, {:result, result})
     end

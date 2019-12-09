@@ -18,7 +18,9 @@ defmodule AdventOfCode.Day05 do
       {:output, output} ->
         IO.inspect(output, label: "Output")
         intcode_receive
-      :eot -> IO.puts("End of transmission")
+
+      :eot ->
+        IO.puts("End of transmission")
     end
   end
 end
