@@ -6,7 +6,7 @@ defmodule AdventOfCode.IntcodeTest do
 
   test "3 get command" do
     send(self(), {:input, 5})
-    assert run([3, 1, 99], self()) == [3, 5, 99]
+    assert run([3, 1, 99], self()) == %{0 => 3, 1 => 5, 2 => 99}
   end
 
   test "4 put command with position mode" do
