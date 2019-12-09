@@ -3,7 +3,7 @@ defmodule AdventOfCode.Day05 do
     send(self(), {:input, 1})
     AdventOfCode.Intcode.run(code, self())
 
-    intcode_receive
+    intcode_receive()
   end
 
   def part2(code) do
@@ -17,7 +17,7 @@ defmodule AdventOfCode.Day05 do
     receive do
       {:output, output} ->
         IO.inspect(output, label: "Output")
-        intcode_receive
+        intcode_receive()
 
       :eot ->
         IO.puts("End of transmission")
