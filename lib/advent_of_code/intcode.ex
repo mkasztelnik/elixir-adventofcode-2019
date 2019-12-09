@@ -1,4 +1,6 @@
 defmodule AdventOfCode.Intcode do
+  defstruct code: [], pid: nil, index: 0
+
   @doc """
     ## Examples:
       iex> AdventOfCode.Intcode.run([1, 0, 0, 0, 99], self())
@@ -12,51 +14,73 @@ defmodule AdventOfCode.Intcode do
       iex> AdventOfCode.Intcode.run([1002, 4, 3, 4, 33], self())
       [1002, 4, 3, 4, 99]
   """
-  def run(code, pid, index \\ 0) do
-    do_run(Enum.slice(code, index..-1), index, code, pid)
+  def run(code, pid) do
+    run(%AdventOfCode.Intcode{code: code, pid: pid, index: 0})
   end
 
-  defp do_run([operation | tail], index, code, pid) do
-    do_run({rem(operation, 100), div(operation, 100)}, tail, index, code, pid)
+  def run(%AdventOfCode.Intcode{code: code, index: index} = state) do
+    do_run(Enum.slice(code, index..-1), state)
   end
 
-  defp do_run({99, _}, _, _, code, pid) do
+  defp do_run([operation | tail], state) do
+    do_run({rem(operation, 100), div(operation, 100)}, tail, state)
+  end
+
+  defp do_run({99, _}, _, %AdventOfCode.Intcode{code: code, pid: pid}) do
     send(pid, :eot)
     code
   end
 
-  defp do_run({3, 0}, [target_index | _], index, code, pid) do
+  defp do_run({3, 0}, [target_index | _], %AdventOfCode.Intcode{code: code, index: index} = state) do
     receive do
       {:input, input} ->
-        List.replace_at(code, target_index, input) |> run(pid, index + 2)
+        updated_code = List.replace_at(code, target_index, input)
+        run(%{state | code: updated_code, index: index + 2})
     end
   end
 
-  defp do_run({4, mode}, [source_index | _], index, code, pid) do
+  defp do_run(
+         {4, mode},
+         [source_index | _],
+         %AdventOfCode.Intcode{code: code, index: index, pid: pid} = state
+       ) do
     send(pid, {:output, value(code, source_index, mode)})
-    run(code, pid, index + 2)
+    run(%{state | index: index + 2})
   end
 
-  defp do_run({5, modes}, [source_index, new_index_index | _], index, code, pid) do
+  defp do_run(
+         {5, modes},
+         [source_index, new_index_index | _],
+         %AdventOfCode.Intcode{code: code, index: index} = state
+       ) do
     case value(code, source_index, mode(modes, 10)) != 0 do
-      true -> run(code, pid, value(code, new_index_index, mode(modes, 100)))
-      false -> run(code, pid, index + 3)
+      true -> run(%{state | index: value(code, new_index_index, mode(modes, 100))})
+      false -> run(%{state | index: index + 3})
     end
   end
 
-  defp do_run({6, modes}, [source_index, new_index_index | _], index, code, pid) do
+  defp do_run(
+         {6, modes},
+         [source_index, new_index_index | _],
+         %AdventOfCode.Intcode{code: code, index: index} = state
+       ) do
     case value(code, source_index, mode(modes, 10)) == 0 do
-      true -> run(code, pid, value(code, new_index_index, mode(modes, 100)))
-      false -> run(code, pid, index + 3)
+      true -> run(%{state | index: value(code, new_index_index, mode(modes, 100))})
+      false -> run(%{state | index: index + 3})
     end
   end
 
-  defp do_run({operation, modes}, [first_index, second_index, target_index | _], index, code, pid) do
+  defp do_run(
+         {operation, modes},
+         [first_index, second_index, target_index | _],
+         %AdventOfCode.Intcode{code: code, index: index} = state
+       ) do
     first_value = value(code, first_index, mode(modes, 10))
     second_value = value(code, second_index, mode(modes, 100))
     value = execute_operation(operation, first_value, second_value)
+    updated_code = List.replace_at(code, target_index, value)
 
-    List.replace_at(code, target_index, value) |> run(pid, index + 4)
+    run(%{state | code: updated_code, index: index + 4})
   end
 
   defp value(code, index, 0), do: Enum.at(code, index)
