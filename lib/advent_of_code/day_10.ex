@@ -22,15 +22,16 @@ defmodule AdventOfCode.Day10 do
     |> Enum.max()
   end
 
-  defp observed_count(point, points, angles \\ MapSet.new)
+  defp observed_count(point, points, angles \\ MapSet.new())
   defp observed_count(point, [point | tail], angles), do: observed_count(point, tail, angles)
   defp observed_count(_point, [], angles), do: Enum.count(angles)
+
   defp observed_count(point, [target | tail], angles) do
     observed_count(point, tail, MapSet.put(angles, angle(target, point)))
   end
 
   defp angle({ax, ay}, {bx, by}) do
-    degree = :math.atan2(ax - bx, by - ay) * 180/:math.pi
+    degree = :math.atan2(ax - bx, by - ay) * 180 / :math.pi()
     if degree < 0, do: 360 + degree, else: degree
   end
 
@@ -59,6 +60,7 @@ defmodule AdventOfCode.Day10 do
   end
 
   defp sort_targets(ordered_maps, buffer \\ [], ordered \\ [])
+
   defp sort_targets([], [], ordered) do
     Enum.reverse(ordered)
   end
@@ -74,6 +76,7 @@ defmodule AdventOfCode.Day10 do
   defp sort_targets([], buffer, ordered) do
     sort_targets(Enum.reverse(buffer), [], ordered)
   end
+
   #
   # defp targets(base, map, targets \\ [])
   # defp targets(base, [base | map], targets), do: targets(base, map, targets)
@@ -84,7 +87,7 @@ defmodule AdventOfCode.Day10 do
   # end
 
   defp distance({ax, ay}, {bx, by}) do
-    :math.pow(ax - bx, 2) + :math.pow(ay - by, 2) |> :math.sqrt()
+    (:math.pow(ax - bx, 2) + :math.pow(ay - by, 2)) |> :math.sqrt()
   end
 
   defp parse(lines) do
