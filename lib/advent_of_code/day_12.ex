@@ -22,16 +22,67 @@ defmodule AdventOfCode.Day12 do
     {{px1, py1, pz1}, {vx1 + change(px1, px2), vy1 + change(py1, py2), vz1 + change(pz1, pz2)}}
   end
 
+  defp update_gravity({p1, v1}, {p2, _}), do: {p1, v1 + change(p1, p2)}
+
   defp move({{px, py, pz}, {vx, vy, vz}}), do: {{px + vx, py + vy, pz + vz}, {vx, vy, vz}}
+  defp move({px, vx}), do: {px + vx, vx}
 
   defp change(v1, v2) when v1 > v2, do: -1
   defp change(v1, v2) when v1 < v2, do: 1
-  defp change(v1, v2), do: 0
+  defp change(_v1, _v2), do: 0
 
   defp energy({x, y, z}), do: abs(x) + abs(y) + abs(z)
   defp energy({p, v}), do: energy(p) * energy(v)
 
-  def part2(args) do
+  def part2(lines) do
+    moons =
+      lines
+      |> Enum.map(&parse/1)
+
+    cycle(x_map(moons))
+    |> lcm(cycle(y_map(moons)))
+    |> lcm(cycle(z_map(moons)))
+  end
+
+  defp x_map([
+         {{p1, _, _}, {v1, _, _}},
+         {{p2, _, _}, {v2, _, _}},
+         {{p3, _, _}, {v3, _, _}},
+         {{p4, _, _}, {v4, _, _}}
+       ]),
+       do: [{p1, v1}, {p2, v2}, {p3, v3}, {p4, v4}]
+
+  defp y_map([
+         {{_, p1, _}, {_, v1, _}},
+         {{_, p2, _}, {_, v2, _}},
+         {{_, p3, _}, {_, v3, _}},
+         {{_, p4, _}, {_, v4, _}}
+       ]),
+       do: [{p1, v1}, {p2, v2}, {p3, v3}, {p4, v4}]
+
+  defp z_map([
+         {{_, _, p1}, {_, _, v1}},
+         {{_, _, p2}, {_, _, v2}},
+         {{_, _, p3}, {_, _, v3}},
+         {{_, _, p4}, {_, _, v4}}
+       ]),
+       do: [{p1, v1}, {p2, v2}, {p3, v3}, {p4, v4}]
+
+  def gcd(a, 0), do: abs(a)
+  def gcd(a, b), do: gcd(b, rem(a, b))
+
+  def lcm(a, b), do: div(abs(a * b), gcd(a, b))
+
+  defp cycle(one_dimention_map) do
+    Stream.iterate(1, &(&1 + 1))
+    |> Enum.reduce_while(one_dimention_map, fn x, acc ->
+      updated_map = step(acc)
+
+      case updated_map == one_dimention_map do
+        true -> {:halt, x}
+        false -> {:cont, updated_map}
+      end
+    end)
   end
 
   defp parse(line) do
