@@ -44,8 +44,10 @@ defmodule AdventOfCode.Intcode do
 
   defp do_run(
          {3, modes},
-         %AdventOfCode.Intcode{code: code, index: index} = state
+         %AdventOfCode.Intcode{code: code, index: index, pid: pid} = state
        ) do
+    send(pid, :input_required)
+
     receive do
       {:input, input} ->
         updated_code =
