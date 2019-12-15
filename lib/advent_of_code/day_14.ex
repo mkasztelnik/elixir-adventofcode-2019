@@ -79,7 +79,43 @@ defmodule AdventOfCode.Day14 do
   defp parse_chemicals([amount, chemical | tail], acc),
     do: parse_chemicals(tail, [{chemical, amount} | acc])
 
-  def part2(args) do
+  @doc """
+    Day 14 part 1
+
+    ## Examples:
+      iex> AdventOfCode.Day14.part2(AdventOfCode.input!("inputs/d14-test3.txt"))
+      82892753
+      iex> AdventOfCode.Day14.part2(AdventOfCode.input!("inputs/d14-test4.txt"))
+      5586022
+      iex> AdventOfCode.Day14.part2(AdventOfCode.input!("inputs/d14-test5.txt"))
+      460664
+  """
+  def part2(reactions_list) do
+    reactions =
+      reactions_list
+      |> Enum.map(&equation/1)
+      |> Enum.into(%{})
+
+    {inventory, cost} =
+      reactions
+      |> calculate_cost("FUEL", 1)
+
+    oras = 1000000000000
+    fuel_count = oras / cost |> Float.floor() |> Kernel.trunc()
+
+    Stream.iterate(1, &(&1 + 1))
+    |> Enum.reduce_while({fuel_count, oras}, fn _, {from, to} ->
+      middle = from + (to - from) / 2 |> Float.floor() |> Kernel.trunc()
+      {_, cost} = calculate_cost(reactions, "FUEL", middle)
+      case cost < oras do
+        true ->
+          {_, next_cost} = calculate_cost(reactions, "FUEL", middle + 1)
+          if next_cost > oras,
+            do: {:halt, middle},
+            else: {:cont, {middle, to}}
+        false -> {:cont, {from, middle}}
+      end
+    end)
   end
 
   chemical =
