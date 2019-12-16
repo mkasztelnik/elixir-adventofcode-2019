@@ -100,20 +100,24 @@ defmodule AdventOfCode.Day14 do
       reactions
       |> calculate_cost("FUEL", 1)
 
-    oras = 1000000000000
-    fuel_count = oras / cost |> Float.floor() |> Kernel.trunc()
+    oras = 1_000_000_000_000
+    fuel_count = (oras / cost) |> Float.floor() |> Kernel.trunc()
 
     Stream.iterate(1, &(&1 + 1))
     |> Enum.reduce_while({fuel_count, oras}, fn _, {from, to} ->
-      middle = from + (to - from) / 2 |> Float.floor() |> Kernel.trunc()
+      middle = (from + (to - from) / 2) |> Float.floor() |> Kernel.trunc()
       {_, cost} = calculate_cost(reactions, "FUEL", middle)
+
       case cost < oras do
         true ->
           {_, next_cost} = calculate_cost(reactions, "FUEL", middle + 1)
+
           if next_cost > oras,
             do: {:halt, middle},
             else: {:cont, {middle, to}}
-        false -> {:cont, {from, middle}}
+
+        false ->
+          {:cont, {from, middle}}
       end
     end)
   end

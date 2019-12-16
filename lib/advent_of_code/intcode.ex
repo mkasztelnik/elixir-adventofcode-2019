@@ -1,5 +1,5 @@
 defmodule AdventOfCode.Intcode do
-  defstruct code: [], pid: nil, index: 0, relative_base: 0
+  defstruct code: [], index: 0, relative_base: 0, input: nil
 
   def parse(code) do
     {_, map} =
@@ -8,7 +8,7 @@ defmodule AdventOfCode.Intcode do
         {index + 1, Map.put(map, index, instruction)}
       end)
 
-    map
+    %AdventOfCode.Intcode{code: map, index: 0}
   end
 
   @doc """
@@ -24,12 +24,30 @@ defmodule AdventOfCode.Intcode do
       iex> AdventOfCode.Intcode.run([1002, 4, 3, 4, 33], self())
       %{0 => 1002, 1 => 4, 2 => 3, 3 => 4, 4 => 99}
   """
-  def run(%{} = code, pid) do
-    run(%AdventOfCode.Intcode{code: code, pid: pid, index: 0})
-  end
-
   def run(code, pid) when is_list(code) do
     code |> parse() |> run(pid)
+  end
+
+  def run(%AdventOfCode.Intcode{} = initial_state, pid) when is_pid(pid) do
+    Stream.iterate(1, &(&1 + 1))
+    |> Enum.reduce_while(initial_state, fn _, state ->
+      case run(state) do
+        {:eot, %AdventOfCode.Intcode{code: code}} ->
+          send(pid, :eot)
+          {:halt, code}
+
+        {:input_required, new_state} ->
+          send(pid, :input_required)
+
+          receive do
+            {:input, input} -> {:cont, %{new_state | input: input}}
+          end
+
+        {:output, new_state, output} ->
+          send(pid, {:output, output})
+          {:cont, new_state}
+      end
+    end)
   end
 
   def run(%AdventOfCode.Intcode{code: code, index: index} = state) do
@@ -37,32 +55,29 @@ defmodule AdventOfCode.Intcode do
     do_run({rem(operation, 100), div(operation, 100)}, state)
   end
 
-  defp do_run({99, _}, %AdventOfCode.Intcode{code: code, pid: pid}) do
-    send(pid, :eot)
-    code
+  defp do_run({99, _}, %AdventOfCode.Intcode{} = state) do
+    {:eot, state}
   end
 
   defp do_run(
          {3, modes},
-         %AdventOfCode.Intcode{code: code, index: index, pid: pid} = state
+         %AdventOfCode.Intcode{code: code, index: index, input: input} = state
        ) do
-    send(pid, :input_required)
+    case input do
+      nil ->
+        {:input_required, state}
 
-    receive do
-      {:input, input} ->
-        updated_code =
-          update(code, index(state, Map.get(code, index + 1), mode(modes, 10)), input)
-
-        run(%{state | code: updated_code, index: index + 2})
+      val ->
+        updated_code = update(code, index(state, Map.get(code, index + 1), mode(modes, 10)), val)
+        run(%{state | code: updated_code, index: index + 2, input: nil})
     end
   end
 
   defp do_run(
          {4, mode},
-         %AdventOfCode.Intcode{code: code, index: index, pid: pid} = state
+         %AdventOfCode.Intcode{code: code, index: index} = state
        ) do
-    send(pid, {:output, value(state, Map.get(code, index + 1), mode)})
-    run(%{state | index: index + 2})
+    {:output, %{state | index: index + 2}, value(state, Map.get(code, index + 1), mode)}
   end
 
   defp do_run(

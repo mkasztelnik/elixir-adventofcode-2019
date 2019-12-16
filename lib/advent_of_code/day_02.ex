@@ -4,10 +4,8 @@ defmodule AdventOfCode.Day02 do
     |> calculate(12, 2)
   end
 
-  def calculate(code, noun, verb) do
-    code
-    |> Map.put(1, noun)
-    |> Map.put(2, verb)
+  def calculate(%AdventOfCode.Intcode{code: code} = state, noun, verb) do
+    %{state | code: code |> Map.put(1, noun) |> Map.put(2, verb)}
     |> AdventOfCode.Intcode.run(self())
     |> Map.get(0)
   end
