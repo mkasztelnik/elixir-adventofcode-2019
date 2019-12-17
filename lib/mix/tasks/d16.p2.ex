@@ -5,7 +5,7 @@ defmodule Mix.Tasks.D16.P2 do
 
   @shortdoc "Day 16 Part 2"
   def run(args) do
-    input = nil
+    input = AdventOfCode.input!("inputs/d16.txt") |> hd()
 
     if Enum.member?(args, "-b"),
       do: Benchee.run(%{part_2: fn -> input |> part2() end}),
